@@ -1,0 +1,97 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+
+Loading and preprocessing the data
+
+```{r}
+q <-read.csv("activity.csv", header=TRUE)
+s<-aggregate(q$steps,by=list(q$date),sum)
+totalsteps<-s$x
+```
+
+
+What is mean total number of steps taken per day?
+
+1. Here is a histogram of the total number of steps taken each day:
+
+```{r}
+hist(totalsteps)
+```
+
+2. First table is the mean of steps in day, and the second is the median of steps in each day:
+
+```{r}
+aggregate(q$steps,by=list(q$date),mean)
+aggregate(q$steps,by=list(q$date),median)
+```
+
+
+What is the average daily activity pattern?
+
+1. Here is a time-series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis):
+
+```{r}
+qr<-na.omit(q)
+avb<-aggregate(qr[,"steps"],by=list(qr[,"interval"]),mean)
+plot(y=avb$x,x=avb$Group.1,type="l",ylab="Average Steps",xlab="Intervals")
+```
+
+2. The maximum number of steps across all dates is 806, and it occurs at the 615 5-minute interval:
+
+```{r}
+subset(qr,qr[,"steps"] == max(qr[,"steps"]))
+```
+
+
+Imputing missing values
+
+1. There are this many missing values in the dataset:
+
+```{r}
+length(which(is.na(q)))
+```
+
+2. Missing values will be replaced with zeroes
+
+3. This is a new dataset with those missing values imputed with zeroes
+
+```{r}
+qrna<-q
+qrna[is.na(qrna)]<-0
+```
+
+4. This is a histogram of the total number of steps taken each day and the mean and median total number of steps taken per day for the new dataset. The new dataset differs from the old one in some ways.  Removing NA's actually skewed the histogram to the right a bit.  It had no effect on the mean, but it did affect the median.
+
+```{r}
+sna<-aggregate(qrna$steps,by=list(qrna$date),sum)
+totalstepsna<-sna$x
+hist(totalstepsna)
+aggregate(qrna$steps,by=list(qrna$date),mean)
+aggregate(qrna$steps,by=list(qrna$date),median)
+```
+
+
+Are there differences in activity patterns between weekdays and weekends?
+
+For this part the weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
+
+1. Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+
+```{r}
+qrna["weekday_flag3"] <- ifelse((qrna$weekday_flag2 == 6 | qrna$weekday_flag2 == 0),"weekend","weekday")
+qrnag<-aggregate(qrna[,"steps"],by=list(qrna[,"interval"],qrna[,"weekday_flag3"]),mean)
+```
+
+2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). The plot should look something like the following, which was creating using simulated data:
+
+```{r}
+qrnawd<-qrnag[qrnag$Group.2=="weekday",]
+plot(x=qrnawd$Group.1, y=qrnawd$x,type="l", xlab="interval",ylab="steps", xlim=c(0,2500),ylim=c(0,300))
+qrnawe<-qrnag[qrnag$Group.2=="weekend",]
+plot(x=qrnawe$Group.1, y=qrnawe$x,type="l", xlab="interval",ylab="steps", xlim=c(0,2500),ylim=c(0,300))
+```
