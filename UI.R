@@ -1,24 +1,34 @@
-
 library(shiny)
-library(rCharts)
-library(data.table)
 
-
-shinyUI(
-  navbarPage("Storm Database Explorer",tabPanel("Plot",
-              sidebarPanel(sliderInput("range", "Range:", min = 1950, max = 2011, 
-         value = c(1993, 2011),format="####"),uiOutput("evtypeControls")),
-
-  mainPanel(tabsetPanel(tabPanel('By state',column(3,wellPanel(radioButtons("populationCategory",
-                                                                                                                          "Population impact category:",c("Both" = "both", "Injuries" = "injuries", "Fatalities" = "fatalities")))),
-    column(3,wellPanel(radioButtons("economicCategory","Economic impact category:",
-                                                                                                               c("Both" = "both", "Property damage" = "property", "Crops damage" = "crops")))),
-   column(7,plotOutput("populationImpactByState"),plotOutput("economicImpactByState"))),
-    tabPanel('By year',h4('Number of events by year', align = "center"),showOutput("eventsByYear", "nvd3"),
-    h4('Population impact by year', align = "center"),showOutput("populationImpact", "nvd3"),
-    h4('Economic impact by year', align = "center"),showOutput("economicImpact", "nvd3")),
-                                                                      
-  tabPanel('Data',dataTableOutput(outputId="table"),downloadButton('downloadData', 'Download'))))),
-             
-             tabPanel("About",mainPanel(includeMarkdown("README.md"))))
-)
+# Define UI for dataset viewer application
+shinyUI(fluidPage(
+  
+  # Application title
+  titlePanel("Dataset Explorer"),
+  
+  # Sidebar with controls to provide a caption, select a dataset,
+  # and specify the number of observations to view. Note that
+  # changes made to the caption in the textInput control are
+  # updated in the output area immediately as you type
+  sidebarLayout(
+    sidebarPanel(
+      textInput("caption", "Caption:", "Data Summary"),
+      
+      selectInput("dataset", "Choose a dataset:", 
+                  choices = c("sleep", "Orange", "iris", "quakes")),
+      
+      numericInput("obs", "Number of observations to view:", 10)
+    ),
+    
+    
+    # Show the caption, a summary of the dataset and an HTML 
+    # table with the requested number of observations
+    mainPanel(
+      h3(textOutput("caption", container = span)),
+      
+      verbatimTextOutput("summary"), 
+      
+      tableOutput("view")
+    )
+  )
+))
